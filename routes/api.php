@@ -10,4 +10,8 @@ Route::post('/register', [DoctorController::class, 'register'])
 ->middleware('guest')
 ->name('register');
 
+Route::post("/forgot-password", [DoctorController::class, "forgotPassword"])
+->middleware('guest')
+->name('login');
+
 Route::middleware('auth:sanctum')->get('/doctors', [DoctorController::class, 'index']);

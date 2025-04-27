@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Actions\DoctorAction;
 use App\DTOs\RegisterDoctorDTO;
 use App\Models\Doctor;
+use Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\ValidationException;
 
 class DoctorService
@@ -33,4 +33,16 @@ class DoctorService
         return $user->createToken('api-token')->plainTextToken;
     
     }
+    public function forgotPassword(array $data)
+    {
+        $doctorFound = Doctor::where('email', $data['email'])->firstOrFail();
+        if (!Hash::check($data['old_password'], $doctorFound->password)) {
+            throw new \Exception("Senha atual incorreta.");
+        }
+        $doctorFound->password = Hash::make($data['password']);
+        $doctorFound->save();
+    
+        return $doctorFound;
+    }
+    
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\DTOs\RegisterDoctorDTO;
 use App\Http\Controllers\Controller;
 use App\Services\DoctorService;
+use Exception;
 use Illuminate\Http\Request;
 use Validator;
 class DoctorController extends Controller {
@@ -19,7 +20,7 @@ class DoctorController extends Controller {
             return response()->json([
                 'data' => $doctors
             ], 200);
-        } catch(\Exception $e){
+        } catch(Exception $e){
             return response()->json([
                 'message' => "Ocorreu um erro!" . $e
             ], 500);
@@ -35,16 +36,16 @@ class DoctorController extends Controller {
         try {
             $token = $this->doctorService->login($credentials);
             return response()->json(['message' => 'Login efetuado!', 'token' => $token], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 401);
         }
     }
     public function register(Request $request){
         $validated = Validator::make($request->all(), [
-            'name'     => 'required|string|max:255',
-            'last_name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:doctors,email',
             'password' => 'required|string|min:6',
+            'name'     => 'required|string|max:255',
+            'last_name'     => 'required|string|max:255',
             'country'     => 'required|string|max:255',
             'document'     => 'required|string|max:255',
             'medical_license_number'     => 'required|string|max:255',
@@ -62,10 +63,30 @@ class DoctorController extends Controller {
                 'message' => 'Doutor registrado com sucesso!',
                 'doctor' => $doctor,
             ], 201);
-        } catch(\Exception $e){
+        } catch(Exception $e){
             return response()->json([
                 'message' => 'Erro: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+    public function forgotPassword(Request $request){
+        $validated = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' =>  'required|string|min:6|different:current_password',
+            'old_password' => 'required|string|min:6',
+        ])->validate();
+        
+        try {
+            $doctorReset = $this->doctorService->forgotPassword($validated);
+            return response()->json([
+                "message" => "Senha resetada com sucesso!",
+                "data" => $doctorReset,
+            ], 200);
+        }
+        catch(Exception $e){
+            return response()->json([
+                "message" => "Ocorreu um erro ao resetar senha: " . $e,
+            ]);
         }
     }
 }
